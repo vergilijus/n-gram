@@ -1,16 +1,15 @@
 module Main where
 
-import System.IO
-import System.Environment
-import Data.Char
-import Ngrams
-import qualified TextUtils as Txt
+import           Data.Char
+import           Ngrams
+import           System.Environment
+import           System.IO
 
 main :: IO ()
 main = do
-    (fileName:args) <- getArgs
+    (fileName:nStr:args) <- getArgs
     text <- readFile fileName
-    mapM putStrLn $ getDigrams text
+    let n = read nStr
+    mapM_ print $ ngrams n text
     return ()
 
-getDigrams = getNgrams 2 . Txt.getWords . Txt.toLower
