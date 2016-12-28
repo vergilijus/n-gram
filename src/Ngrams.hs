@@ -1,31 +1,29 @@
 module Ngrams
     ( getNgrams
     , getNgramsMap
-    , getSortedNgramsList
     , ngrams
     ) where
 
+import           Data.Char
 import           Data.List
 import           Data.Map  (Map)
 import qualified Data.Map  as Map
-import qualified TextUtils as Txt
+import           Data.Ord
 
-getNgrams :: Int -> [String] -> [String]
+type Ngram a = ([a], Int)
+
+getNgrams :: Int -> [a] -> [[a]]
 getNgrams _ [] = []
-getNgrams n words@(firsWord:otherWords)
-    | length words < n  = []
-    | otherwise         = getNgram words : getNgrams n otherWords
-  where
-    getNgram = unwords . take n
+getNgrams n xs@(_:suffix)
+    | length xs < n = []
+    | otherwise     = take n xs : getNgrams n suffix
 
-getNgramsMap :: Int -> [String] -> Map String Int
-getNgramsMap n words = Map.fromListWith (+) wordsList
+getNgramsMap :: (Ord a) => Int -> [a] -> Map [a] Int
+getNgramsMap n xs = Map.fromListWith (+) wordsList
   where
     wordsList = zip ngrams [1,1..]
-    ngrams = getNgrams n words
+    ngrams = getNgrams n xs
 
-getSortedNgramsList :: (Ord v) => Map k v -> [(k, v)]
-getSortedNgramsList = sortBy (\ (_, v1) (_, v2) -> v1 `compare` v2) . Map.toList
+ngrams :: (Ord a) => Int -> [a] -> [Ngram a]
+ngrams n = sortBy (comparing snd) . Map.toList . getNgramsMap n
 
-ngrams :: Int -> String -> [(String, Int)]
-ngrams n = getSortedNgramsList . getNgramsMap n . Txt.getWords
